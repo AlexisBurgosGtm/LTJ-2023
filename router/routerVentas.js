@@ -700,7 +700,7 @@ router.post('/reportemarcasdia',async(req,res)=>{
                              ME_Documentos ON ME_Docproductos.DOC_MES = ME_Documentos.DOC_MES AND ME_Docproductos.DOC_ANO = ME_Documentos.DOC_ANO AND ME_Docproductos.EMP_NIT = ME_Documentos.EMP_NIT AND 
                              ME_Docproductos.CODDOC = ME_Documentos.CODDOC AND ME_Docproductos.DOC_NUMERO = ME_Documentos.DOC_NUMERO LEFT OUTER JOIN
                              ME_Tipodocumentos ON ME_Documentos.CODSUCURSAL = ME_Tipodocumentos.CODSUCURSAL AND ME_Documentos.CODDOC = ME_Tipodocumentos.CODDOC AND ME_Documentos.EMP_NIT = ME_Tipodocumentos.EMP_NIT
-                WHERE (ME_Documentos.DOC_ESTATUS <> 'A') AND (ME_Documentos.CODVEN = ${codven}) AND (ME_Documentos.DOC_FECHA = '${fecha}') AND 
+                WHERE (ME_Tipodocumentos.TIPODOC = 'PED') AND (ME_Documentos.DOC_ESTATUS <> 'A') AND (ME_Documentos.CODVEN = ${codven}) AND (ME_Documentos.DOC_FECHA = '${fecha}') AND 
                              (ME_Documentos.CODSUCURSAL = '${sucursal}')
                 GROUP BY ME_Marcas.DESMARCA`;
 
@@ -760,7 +760,7 @@ router.post('/reportemarcas',async(req,res)=>{
                              ME_Documentos.EMP_NIT = ME_Docproductos.EMP_NIT AND ME_Documentos.CODDOC = ME_Docproductos.CODDOC AND ME_Documentos.DOC_NUMERO = ME_Docproductos.DOC_NUMERO ON 
                              ME_Productos.CODSUCURSAL = ME_Docproductos.CODSUCURSAL AND ME_Productos.CODPROD = ME_Docproductos.CODPROD LEFT OUTER JOIN
                              ME_Tipodocumentos ON ME_Documentos.CODSUCURSAL = ME_Tipodocumentos.CODSUCURSAL AND ME_Documentos.CODDOC = ME_Tipodocumentos.CODDOC AND ME_Documentos.EMP_NIT = ME_Tipodocumentos.EMP_NIT
-                WHERE  (ME_Documentos.DOC_ESTATUS <> 'A') AND (ME_Documentos.CODVEN = ${codven}) AND (ME_Documentos.DOC_MES = ${mes}) AND (ME_Documentos.DOC_ANO = ${anio}) AND 
+                WHERE (ME_Tipodocumentos.TIPODOC = 'PED') AND (ME_Documentos.DOC_ESTATUS <> 'A') AND (ME_Documentos.CODVEN = ${codven}) AND (ME_Documentos.DOC_MES = ${mes}) AND (ME_Documentos.DOC_ANO = ${anio}) AND 
                              (ME_Documentos.CODSUCURSAL = '${sucursal}')
                 GROUP BY ME_Marcas.DESMARCA`;
 
@@ -865,11 +865,14 @@ router.post('/rptrankingvendedoressucursal', async(req,res)=>{
 // ranking de vendedores por sucursal y fecha
 router.post('/rptrankingvendedoressucursal2', async(req,res)=>{
     const {fecha,sucursal} = req.body;
-    let qry = `SELECT       ME_Vendedores.NOMVEN, COUNT(ME_Documentos.CODDOC) AS PEDIDOS, SUM(ME_Documentos.DOC_TOTALVENTA) AS TOTALPRECIO
-    FROM            ME_Documentos LEFT OUTER JOIN
-                             ME_Vendedores ON ME_Documentos.CODVEN = ME_Vendedores.CODVEN AND ME_Documentos.CODSUCURSAL = ME_Vendedores.CODSUCURSAL
+    let qry = `SELECT       ME_Documentos.CODVEN,
+                            ME_Vendedores.NOMVEN, 
+                            COUNT(ME_Documentos.CODDOC) AS PEDIDOS, 
+                            SUM(ME_Documentos.DOC_TOTALVENTA) AS TOTALPRECIO
+                FROM ME_Documentos LEFT OUTER JOIN
+                            ME_Vendedores ON ME_Documentos.CODVEN = ME_Vendedores.CODVEN AND ME_Documentos.CODSUCURSAL = ME_Vendedores.CODSUCURSAL
                 WHERE (ME_Documentos.DOC_ESTATUS <> 'A') AND (ME_Documentos.CODSUCURSAL = '${sucursal}') AND (ME_Documentos.DOC_FECHA = '${fecha}')
-                GROUP BY ME_Vendedores.NOMVEN
+                GROUP BY ME_Documentos.CODVEN, ME_Vendedores.NOMVEN
                 ORDER BY TOTALPRECIO DESC`;
     
     execute.Query(res,qry);
@@ -916,6 +919,7 @@ router.post('/reportemarcasfecha',async(req,res)=>{
 
 });
 
+
 // reporte de marcas por mes
 router.post('/reportemarcasmes',async(req,res)=>{
 
@@ -940,6 +944,12 @@ router.post('/reportemarcasmes',async(req,res)=>{
 
 
 });
+
+
+
+
+
+
 
 
 // INSERTA UN PEDIDO EN LAS TABLAS DE DOCUMENTOS Y DOCPRODUCTOS
@@ -1136,6 +1146,7 @@ router.post("/insertventa", async (req,res)=>{
     
 });
 
+
 router.post("/BACKUP_insertventa", async (req,res)=>{
     
     const {jsondocproductos,codsucursal,empnit,anio,mes,dia,coddoc,correl,fecha,fechaentrega,formaentrega,codcliente,nomclie,codbodega,totalcosto,totalprecio,nitclie,dirclie,obs,direntrega,usuario,codven,lat,long,hora} = req.body;
@@ -1265,6 +1276,8 @@ router.post("/BACKUP_insertventa", async (req,res)=>{
     execute.Query(res, qrycorrelativo + qry + qrydoc);
     
 });
+
+
 router.post("/updatecorrelativo", async (req,res)=>{
 
     const {codsucursal,coddoc,correlativo} = req.body;
@@ -1280,6 +1293,21 @@ router.post("/updatecorrelativo", async (req,res)=>{
     execute.Query(res,qrycorrelativo);
 
 });
+
+
+router.post("/update_fecha_pedido", async (req,res)=>{
+
+    const {sucursal,coddoc,correlativo,nuevafecha} = req.body;
+
+    let qry = `
+        UPDATE ME_DOCUMENTOS SET DOC_FECHA='${nuevafecha}'
+        WHERE CODSUCURSAL='${sucursal}' AND CODDOC='${coddoc}' AND DOC_NUMERO='${correlativo}'
+    `
+
+    execute.Query(res,qry);
+
+});
+
 
 function getCorrelativo(correlativo){
     let numdoc = '';

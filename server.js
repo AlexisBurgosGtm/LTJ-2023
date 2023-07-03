@@ -21,11 +21,11 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http, { cors: { origin: '*' } });
 
 
-const PORT = process.env.PORT || 5300;
+const PORT = process.env.PORT || 4300;
 
 const cors = require('cors');
 app.use(cors({
-    origin: '' //orign: ["www.app1.com","www.app2.com"]
+    origin: '*' //orign: ["www.app1.com","www.app2.com"]
 }));
 
 app.use(bodyParser.json());

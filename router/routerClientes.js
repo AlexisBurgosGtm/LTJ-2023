@@ -6,11 +6,11 @@ const router = express.Router();
 
 router.post("/solicitud_cambios_cliente", async(req,res)=>{
 
-    const{sucursal,codclie,nitclie,tiponegocio,negocio,nomclie,dirclie,lat,long} = req.body;
+    const{sucursal,codclie,nitclie,tiponegocio,negocio,nomclie,dirclie,referencia,lat,long} = req.body;
 
     let qry = `INSERT INTO ME_CENSO_SOLICITUDES (
-            CODSUCURSAL, CODCLIE,NITCLIE,TIPONEGOCIO,NEGOCIO,NOMCLIE,DIRCLIE,LAT,LONG)
-    VALUES ('${sucursal}',${codclie},'${nitclie}','${tiponegocio}','${negocio}','${nomclie}','${dirclie}',${lat},${long});`
+            CODSUCURSAL, CODCLIE,NITCLIE,TIPONEGOCIO,NEGOCIO,NOMCLIE,DIRCLIE,REFERENCIA,LAT,LONG)
+    VALUES ('${sucursal}',${codclie},'${nitclie}','${tiponegocio}','${negocio}','${nomclie}','${dirclie}','${referencia}',${lat},${long});`
     
  
     
@@ -257,6 +257,27 @@ router.get("/departamentos", async(req,res)=>{
     let qry ='';
 
     qry = `SELECT CODDEPTO, DESDEPTO FROM ME_DEPARTAMENTOS WHERE CODSUCURSAL='${app}' ORDER BY PRIMERO DESC`         
+
+    execute.Query(res,qry);
+    
+});
+
+
+router.post("/municipios", async(req,res)=>{
+    const {sucursal} = req.body;
+    let qry ='';
+
+    qry = `SELECT CODMUNI, DESMUNI FROM ME_MUNICIPIOS WHERE CODSUCURSAL='${sucursal}' ORDER BY PRIMERO DESC`         
+
+    execute.Query(res,qry);
+});
+
+//LISTADO DE MUNICIPIOS EN EL SISTEMA
+router.post("/departamentos", async(req,res)=>{
+    const {sucursal} = req.body;
+    let qry ='';
+
+    qry = `SELECT CODDEPTO, DESDEPTO FROM ME_DEPARTAMENTOS WHERE CODSUCURSAL='${sucursal}' ORDER BY PRIMERO DESC`         
 
     execute.Query(res,qry);
     

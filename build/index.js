@@ -98,24 +98,23 @@ window.onpopstate = function(event) {
 let cmbTipoDb = document.getElementById('cmbTipoDb');
 cmbTipoDb.addEventListener('change',()=>{
 
-    switch (cmbTipoDb.value) {
-      case 'PROPIO':
-        GlobalUrlServicePedidos = '';
-        break;
-    
-      case 'HEROKU':
-        GlobalUrlServicePedidos = 'https://mercados-efectivos-api.herokuapp.com'
-        break;
-     
-      case 'RENDER':
-          GlobalUrlServicePedidos = ''
+      switch (cmbTipoDb.value) {
+        case 'PROPIO':
+          GlobalUrlServicePedidos = '';
+          break;
+        
+        case 'RENDER':
+          GlobalUrlServicePedidos = 'https://backend-ltjdist.onrender.com';
+          break;
+      
+        case 'HEROKU':
+          GlobalUrlServicePedidos = 'https://mercados-efectivos-api.herokuapp.com';
           break;
         default:
           GlobalUrlServicePedidos = '';
           break;
-    }
-          
-          
+      }
+             
       
 })
 
